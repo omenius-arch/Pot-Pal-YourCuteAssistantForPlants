@@ -1,0 +1,734 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PotPal - Trợ lý Chăm sóc Cây trồng</title>
+    <!-- Thêm Favicon từ ảnh cậu cung cấp -->
+    <!-- Sử dụng 'image/jpeg' vì file cậu gửi là .jpg -->
+    <link rel="icon" type="image/jpeg" href="favicon.jpg"> 
+    
+    <!-- Tải Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Tải Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        /* Phong cách PlantPal cũ (màu xanh lá cây đậm) */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #ecfdf5; /* Green-50 */
+        }
+        .file-input-label {
+            transition: all 0.2s;
+            cursor: pointer;
+            border-color: #059669; /* Green-600 */
+        }
+        .file-input-label:hover {
+            background-color: #059669; /* Green-600 */
+            color: white;
+        }
+        .btn-primary {
+            background-color: #047857; /* Green-700 */
+            transition: background-color 0.2s;
+        }
+        .btn-primary:hover:not(:disabled) {
+            background-color: #065f46; /* Green-800 */
+        }
+    </style>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'primary-green': '#047857', /* Green-700 */
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="min-h-screen flex items-start justify-center p-4 md:p-10">
+
+    <div id="app-container" class="w-full max-w-xl bg-white rounded-xl shadow-2xl p-6 md:p-10 border border-green-100 mt-8">
+
+        <!-- Header -->
+        <header class="text-center mb-6 border-b-2 border-green-200 pb-4">
+            <h1 class="text-4xl font-extrabold text-primary-green mb-1">
+                <i class="fas fa-leaf mr-2"></i> PotPal
+            </h1>
+            <!-- Dòng "Người đồng hành cư tê của cậu 💖" -->
+            <p class="text-xl text-gray-600 font-medium">Trợ lý chẩn đoán sức khỏe cây trồng</p>
+            <p class="text-lg text-pink-500 font-semibold mt-1">Người đồng hành cư tê của cậu 💖</p> 
+        </header>
+
+        <!-- KHỐI API KEY ĐÃ BỊ XÓA KHỎI UI -->
+
+        <!-- Main Input Section -->
+        <section id="input-section" class="mb-6">
+            
+            <!-- Dòng "Mọi đánh giá..." -->
+            <p class="text-sm text-center text-red-500 font-medium mb-4 p-2 bg-red-50 rounded-lg border border-red-200">
+                Mọi đánh giá đều là sơ bộ thông qua hình ảnh. Hãy hỏi chuyên gia để được kết quả chính xác nhất.
+            </p>
+
+            <!-- Lựa chọn Chế độ Phân tích -->
+            <div class="mb-5 p-4 bg-green-50 rounded-lg border border-green-300">
+                <label class="block text-lg font-bold text-primary-green mb-2 flex items-center">
+                    <i class="fas fa-tasks mr-2"></i> Chọn Chi Tiết Cần Phân Tích:
+                </label>
+                <select id="analysis-mode" class="w-full p-3 border-2 border-green-400 rounded-lg shadow-sm focus:ring-green-500 focus:border-green-500 text-gray-700 font-medium">
+                    <option value="leaf">Đánh giá Lá (Phát hiện Bệnh, Thiếu chất)</option>
+                    <option value="soil">Đánh giá Đất/Giá thể (Kiểm tra Độ ẩm, Nấm mốc)</option>
+                </select>
+            </div>
+            
+            <!-- Hiển thị ảnh và nút chọn lại -->
+            <div id="image-preview-container" class="mb-4 hidden">
+                <img id="image-preview" class="w-full h-auto max-h-64 object-contain rounded-lg border-2 border-green-300 p-1 mb-2 shadow-md" alt="Xem trước ảnh">
+                <button onclick="resetApp()" class="w-full py-2 bg-red-600 text-white font-semibold rounded-lg hover:bg-red-700 transition duration-150">
+                    Chọn Ảnh Khác
+                </button>
+            </div>
+            
+            <!-- Nút Tải ảnh -->
+            <input type="file" id="plant-image" accept="image/*" class="hidden" onchange="previewImage(event)">
+            
+            <label for="plant-image" id="upload-label" class="file-input-label flex flex-col items-center justify-center h-48 border-4 border-dashed text-primary-green rounded-xl bg-green-50 shadow-inner">
+                <i class="fas fa-cloud-upload-alt text-5xl mb-3"></i>
+                <span class="text-xl font-bold">Tải ảnh cây trồng bị bệnh</span>
+                <span class="text-sm mt-1 text-gray-500">(File ảnh < 5MB)</span>
+            </label>
+
+            <!-- Dòng hướng dẫn chụp ảnh mới -->
+            <p class="text-sm text-center text-green-600 font-medium mt-3 mb-4 p-2 bg-green-100 rounded-lg border border-green-300 flex items-center justify-center space-x-2">
+                <i class="fas fa-search-plus"></i> 
+                <span id="instruction-text">Hãy chụp ảnh cây bao quát để có thể đưa kết quả đánh giá tốt nhất ạ 😉</span>
+            </p>
+
+            <button id="diagnose-button" onclick="diagnosePlant()" class="w-full py-3 btn-primary text-white font-bold text-lg rounded-xl shadow-lg disabled:opacity-50" disabled>
+                <i class="fas fa-stethoscope mr-2"></i> Bắt đầu Phân tích
+            </button>
+        </section>
+
+        <!-- Loading Indicator -->
+        <section id="loading-indicator" class="hidden text-center p-8">
+            <div class="animate-spin inline-block w-8 h-8 border-4 border-t-4 border-primary-green border-t-transparent rounded-full mb-3"></div>
+            <p class="text-lg font-semibold text-primary-green">AI đang phân tích ảnh...</p>
+        </section>
+
+        <!-- Results Section (Phần hiển thị kết quả) -->
+        <section id="results-section" class="hidden mt-8 border-t pt-6 border-gray-200">
+            <h2 id="results-title" class="text-3xl font-bold text-gray-800 border-l-4 border-primary-green pl-3 pb-2 mb-6">
+                <i class="fas fa-clipboard-check mr-2 text-primary-green"></i> Kết Quả Chẩn Đoán
+            </h2>
+
+            <!-- Card Lời Khen (Chỉ hiện khi không phải cây trồng) -->
+            <div id="compliment-card" class="hidden text-center bg-yellow-50 p-6 rounded-lg shadow-inner border border-yellow-300">
+                <i class="fas fa-star text-4xl text-yellow-600 mb-3"></i>
+                <p id="compliment-text" class="text-xl font-bold text-yellow-800"></p>
+            </div>
+            
+            <!-- Khối Chẩn đoán (Chỉ hiện khi là cây trồng) -->
+            <div id="diagnosis-content" class="space-y-4">
+                
+                <!-- Tóm tắt -->
+                <div id="diagnosis-card" class="bg-white p-4 rounded-lg shadow-md border-t-4 border-primary-green">
+                    <p class="text-lg font-semibold text-gray-700"><span id="mode-label">Tình Trạng Lá</span>: <span id="result-status" class="font-bold text-red-600"></span></p>
+                    <p class="text-lg font-semibold text-gray-700 mt-1"><span id="mode-diagnosis-label">Chẩn Đoán Sơ Bộ</span>: <span id="result-diagnosis" class="text-gray-900 font-medium"></span></p>
+                </div>
+    
+                <!-- Khuyến nghị & Điều trị -->
+                <div class="bg-green-50 p-4 rounded-lg border border-green-300 shadow-sm">
+                    <h3 class="text-xl font-bold text-primary-green mb-2 flex items-center">
+                        <i class="fas fa-hand-holding-heart mr-2"></i> Hướng Dẫn Chăm Sóc
+                    </h3>
+                    <div id="result-recommendations" class="text-gray-700 whitespace-pre-wrap leading-relaxed text-base"></div>
+                </div>
+
+                <!-- Gợi ý Sản phẩm -->
+                <div id="supplement-suggestion-container" class="hidden bg-gray-100 p-4 rounded-lg border border-gray-300 shadow-sm">
+                    <h3 class="text-lg font-bold text-gray-700 mb-2 flex items-center">
+                        <i class="fas fa-vial mr-2"></i> Gợi Ý Bổ Sung (Dinh Dưỡng)
+                    </h3>
+                    <ul id="supplement-list" class="list-disc list-inside text-gray-700 space-y-1 text-sm">
+                        <!-- Sản phẩm sẽ được thêm vào đây -->
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Message Box (Thay thế cho alert()) -->
+        <div id="message-box" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center p-4 z-50" onclick="hideMessageBox()">
+            <div class="bg-white p-6 rounded-xl shadow-2xl max-w-sm w-full" onclick="event.stopPropagation()">
+                <h3 id="message-box-title" class="text-xl font-bold mb-3 text-red-600">Lỗi</h3>
+                <p id="message-box-content" class="text-gray-700 mb-4">Có lỗi xảy ra.</p>
+                <button onclick="hideMessageBox()" class="w-full py-2 bg-red-600 text-white font-semibold rounded-lg hover:bg-red-700 transition duration-150">Đóng</button>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Chat Widget (Phần mới) -->
+    <div id="chat-widget" class="fixed bottom-4 right-4 md:bottom-10 md:right-10 z-40">
+        <!-- Chat Toggle Button -->
+        <button id="chat-toggle-btn" onclick="toggleChat()" class="bg-primary-green hover:bg-green-700 text-white p-4 rounded-full shadow-lg transition duration-300 transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-green-300">
+            <i class="fas fa-comment-dots text-2xl"></i>
+        </button>
+
+        <!-- Chat Window -->
+        <div id="chat-window" class="hidden bg-white rounded-xl shadow-2xl border-4 border-primary-green flex flex-col w-72 md:w-80 h-96 absolute bottom-16 right-0">
+            <!-- Chat Header -->
+            <div class="p-3 bg-primary-green text-white rounded-t-lg flex justify-between items-center">
+                <span class="text-lg font-bold">PotPal Chat 💖</span>
+                <button onclick="toggleChat()" class="text-white hover:text-green-200">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+
+            <!-- Chat Messages -->
+            <div id="chat-messages" class="flex-grow p-3 overflow-y-auto space-y-3 bg-green-50">
+                <!-- Default welcome message -->
+                <div class="flex justify-start">
+                    <div class="bg-green-200 text-gray-800 p-3 rounded-lg max-w-[80%] shadow-sm text-sm">
+                        <i class="fas fa-leaf text-primary-green mr-1"></i> Chào cậu, PotPal đây! Cậu có câu hỏi nào về cây trồng không? Cứ hỏi tớ nhé! 😊
+                    </div>
+                </div>
+            </div>
+
+            <!-- Chat Input -->
+            <div class="p-3 border-t border-green-300 bg-white flex items-center">
+                <input type="text" id="chat-input" placeholder="Hỏi PotPal..." class="w-full p-2 border border-gray-300 rounded-lg focus:ring-primary-green focus:border-primary-green text-sm" onkeydown="if(event.key === 'Enter') sendChatMessage()">
+                <button onclick="sendChatMessage()" id="chat-send-btn" class="ml-2 p-2 bg-primary-green text-white rounded-lg hover:bg-green-700 transition disabled:opacity-50">
+                    <i class="fas fa-paper-plane"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+
+    <script type="module">
+        // Khóa API được nhúng trực tiếp vào code theo yêu cầu của người dùng
+        const API_KEY = "AIzaSyDX4sbq_x_NdsTJmhVjTAOpexgncPmqrFU"; // Dùng key của người dùng
+        const API_URL_BASE = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${API_KEY}`;
+        
+        // Cấu hình Backoff cho API Call
+        const MAX_RETRIES = 5;
+        const INITIAL_DELAY_MS = 1000; 
+
+        // Global Chat State
+        let chatHistory = [];
+
+        const fileInput = document.getElementById('plant-image');
+        const previewImg = document.getElementById('image-preview');
+        const uploadLabel = document.getElementById('upload-label');
+        const diagnoseButton = document.getElementById('diagnose-button');
+        const loadingIndicator = document.getElementById('loading-indicator');
+        const resultsSection = document.getElementById('results-section');
+        const imagePreviewContainer = document.getElementById('image-preview-container');
+        const supplementContainer = document.getElementById('supplement-suggestion-container');
+        const supplementList = document.getElementById('supplement-list');
+        const analysisModeSelect = document.getElementById('analysis-mode'); 
+        const instructionText = document.getElementById('instruction-text');
+        const modeLabel = document.getElementById('mode-label');
+        const modeDiagnosisLabel = document.getElementById('mode-diagnosis-label');
+
+        const resultsTitle = document.getElementById('results-title');
+        const complimentCard = document.getElementById('compliment-card');
+        const complimentText = document.getElementById('compliment-text');
+        const diagnosisContent = document.getElementById('diagnosis-content');
+        const resultRecommendations = document.getElementById('result-recommendations');
+        const resultStatus = document.getElementById('result-status');
+        const resultDiagnosis = document.getElementById('result-diagnosis');
+        
+        // Các biến mới cho Chatbot
+        const chatWindow = document.getElementById('chat-window');
+        const chatMessages = document.getElementById('chat-messages');
+        const chatInput = document.getElementById('chat-input');
+        const chatSendBtn = document.getElementById('chat-send-btn');
+
+
+        let base64Image = null;
+        let imageMimeType = null; 
+
+        // Event listener cho việc thay đổi chế độ phân tích
+        analysisModeSelect.addEventListener('change', (e) => {
+            const mode = e.target.value;
+            if (mode === 'leaf') {
+                uploadLabel.querySelector('span').textContent = 'Tải ảnh cây trồng bị bệnh';
+                instructionText.textContent = 'Hãy chụp ảnh cây bao quát để có thể đưa kết quả đánh giá tốt nhất ạ 😉';
+                modeLabel.textContent = 'Tình Trạng Lá';
+                modeDiagnosisLabel.textContent = 'Chẩn Đoán Sơ Bộ';
+            } else if (mode === 'soil') {
+                uploadLabel.querySelector('span').textContent = 'Tải ảnh Đất/Giá thể cần phân tích';
+                instructionText.textContent = 'Hãy chụp rõ chi tiết đất/giá thể để PotPal nhận diện nha 😉';
+                modeLabel.textContent = 'Tình Trạng Đất';
+                modeDiagnosisLabel.textContent = 'Đánh Giá Tổng Quan';
+            }
+            resetApp(); 
+        });
+
+        /**
+         * Hàm Tắt/Mở Chat Widget
+         */
+        window.toggleChat = () => {
+            chatWindow.classList.toggle('hidden');
+            if (!chatWindow.classList.contains('hidden')) {
+                chatInput.focus();
+                chatMessages.scrollTop = chatMessages.scrollHeight; // Cuộn xuống dưới khi mở
+            }
+        }
+
+        /**
+         * Render một tin nhắn mới vào cửa sổ chat.
+         */
+        function renderMessage(sender, text) {
+            const messageWrapper = document.createElement('div');
+            messageWrapper.className = sender === 'user' ? 'flex justify-end' : 'flex justify-start';
+
+            const messageBubble = document.createElement('div');
+            
+            // Chuyển Markdown cơ bản (**bold**, *italic*) sang HTML
+            const formattedText = text
+                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                .replace(/\*(.*?)\*/g, '<em>$1</em>')
+                .replace(/\n/g, '<br>');
+
+            messageBubble.innerHTML = formattedText;
+            
+            if (sender === 'user') {
+                messageBubble.className = 'bg-blue-500 text-white p-3 rounded-lg max-w-[80%] shadow-md text-sm';
+            } else {
+                messageBubble.className = 'bg-green-200 text-gray-800 p-3 rounded-lg max-w-[80%] shadow-sm text-sm';
+                messageBubble.innerHTML = `<i class="fas fa-leaf text-primary-green mr-1"></i> ${formattedText}`;
+            }
+
+            messageWrapper.appendChild(messageBubble);
+            chatMessages.appendChild(messageWrapper);
+            
+            // Cuộn xuống tin nhắn mới nhất
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        /**
+         * Gửi tin nhắn từ người dùng và gọi API cho Chatbot.
+         */
+        window.sendChatMessage = async () => {
+            const userText = chatInput.value.trim();
+            if (userText === '') return;
+
+            // 1. Cập nhật UI và trạng thái
+            chatInput.value = '';
+            chatSendBtn.disabled = true;
+            renderMessage('user', userText);
+
+            // Thêm tin nhắn người dùng vào lịch sử
+            chatHistory.push({ role: 'user', parts: [{ text: userText }] });
+
+            // Thêm tin nhắn chờ (Loading)
+            const loadingWrapper = document.createElement('div');
+            loadingWrapper.className = 'flex justify-start';
+            const loadingBubble = document.createElement('div');
+            loadingBubble.className = 'bg-green-200 text-gray-800 p-3 rounded-lg max-w-[80%] shadow-sm animate-pulse text-sm';
+            loadingBubble.innerHTML = `<i class="fas fa-leaf text-primary-green mr-1"></i> PotPal đang nghĩ...`;
+            loadingWrapper.appendChild(loadingBubble);
+            chatMessages.appendChild(loadingWrapper);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+
+            try {
+                // 2. Chuẩn bị System Instruction riêng cho chat
+                const chatSystemInstruction = {
+                    parts: [{ 
+                        text: "Bạn là PotPal, một trợ lý chatbot về chăm sóc cây trồng. Hãy giữ giọng văn thân thiện, dễ thương, dùng từ ngữ hiện đại và trả lời ngắn gọn, trực tiếp cho câu hỏi của người dùng. Tránh trả lời bằng JSON." 
+                    }]
+                };
+
+                // 3. Chuẩn bị Payload cho chat (sử dụng lịch sử)
+                const chatPayload = {
+                    contents: chatHistory,
+                    systemInstruction: chatSystemInstruction
+                };
+                
+                // 4. Gọi API
+                const jsonResponse = await fetchWithExponentialBackoff(chatPayload);
+                
+                // 5. Xử lý phản hồi
+                const modelText = jsonResponse.candidates?.[0]?.content?.parts?.[0]?.text;
+                
+                if (!modelText) {
+                    throw new Error("Phản hồi chat rỗng.");
+                }
+
+                // 6. Cập nhật UI và lịch sử
+                chatHistory.push({ role: 'model', parts: [{ text: modelText }] });
+
+                // Xóa tin nhắn chờ và thêm tin nhắn thực tế
+                chatMessages.removeChild(loadingWrapper);
+                renderMessage('model', modelText);
+
+            } catch (error) {
+                console.error("Lỗi Chatbot:", error);
+                
+                // Xóa tin nhắn chờ và thêm thông báo lỗi
+                chatMessages.removeChild(loadingWrapper);
+                renderMessage('model', 'Xin lỗi cậu, tớ bị lỗi rồi. Cậu thử lại nhé! 🥲');
+                
+            } finally {
+                chatSendBtn.disabled = false;
+                chatInput.focus();
+            }
+        }
+
+        /**
+         * Hiển thị hộp thoại thông báo tùy chỉnh (thay thế cho alert).
+         */
+        window.showMessageBox = (title, content, type = 'error') => {
+            const box = document.getElementById('message-box');
+            const titleElement = document.getElementById('message-box-title');
+            const button = box.querySelector('button');
+
+            titleElement.textContent = title;
+            document.getElementById('message-box-content').textContent = content;
+
+            if (type === 'error') {
+                titleElement.className = 'text-xl font-bold mb-3 text-red-600';
+                button.className = 'w-full py-2 bg-red-600 text-white font-semibold rounded-lg hover:bg-red-700 transition duration-150';
+            } else if (type === 'info') {
+                titleElement.className = 'text-xl font-bold mb-3 text-primary-green';
+                button.className = 'w-full py-2 bg-primary-green text-white font-semibold rounded-lg hover:bg-green-700 transition duration-150';
+            }
+            
+            box.classList.remove('hidden');
+            box.classList.add('flex');
+        }
+
+        window.hideMessageBox = () => {
+            document.getElementById('message-box').classList.add('hidden');
+            document.getElementById('message-box').classList.remove('flex');
+        }
+
+        /**
+         * Trích xuất JSON object từ chuỗi text.
+         */
+        function extractJsonFromText(text) {
+            // Regex tìm JSON object: bắt đầu bằng { và kết thúc bằng } (sử dụng /s để . khớp với newline)
+            const match = text.match(/\{[\s\S]*\}/s); 
+            if (match) {
+                let jsonString = match[0];
+                
+                // Loại bỏ các ký tự dư thừa thường gặp do AI thêm vào:
+                jsonString = jsonString.replace(/```json/g, '').replace(/```/g, '').trim();
+
+                try {
+                    // Cố gắng parse nội dung bên trong dấu ngoặc nhọn
+                    return JSON.parse(jsonString);
+                } catch (e) {
+                    console.error("Lỗi khi parse JSON đã trích xuất:", e, "JSON string:", jsonString);
+                    // Hiển thị thông báo chi tiết hơn về lỗi parsing
+                    throw new Error("Phản hồi của AI không ở định dạng JSON hợp lệ (Parsing Failed).");
+                }
+            }
+            console.error("Lỗi: Không tìm thấy JSON object trong phản hồi của AI. Raw text:", text);
+            throw new Error("Không tìm thấy JSON object trong phản hồi của AI.");
+        }
+
+        /**
+         * Xem trước ảnh được chọn và chuyển đổi sang Base64
+         */
+        window.previewImage = (event) => {
+            const file = event.target.files[0];
+            if (!file) {
+                diagnoseButton.disabled = true;
+                return;
+            }
+
+            if (file.size > 5 * 1024 * 1024) { // Giới hạn 5MB
+                showMessageBox("Lỗi Kích Thước Ảnh", "Vui lòng chọn ảnh có kích thước dưới 5MB.");
+                diagnoseButton.disabled = true;
+                fileInput.value = '';
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                const base64String = reader.result.split(',')[1];
+                base64Image = base64String;
+                imageMimeType = file.type;
+
+                previewImg.src = reader.result;
+                imagePreviewContainer.classList.remove('hidden');
+                uploadLabel.classList.add('hidden');
+                diagnoseButton.disabled = false;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        /**
+         * Reset giao diện và trạng thái ứng dụng
+         */
+        window.resetApp = () => {
+            fileInput.value = '';
+            base64Image = null;
+            imageMimeType = null;
+            
+            imagePreviewContainer.classList.add('hidden');
+            uploadLabel.classList.remove('hidden');
+            diagnoseButton.disabled = true;
+            loadingIndicator.classList.add('hidden');
+            resultsSection.classList.add('hidden');
+
+            resultStatus.textContent = '';
+            resultDiagnosis.textContent = '';
+            resultRecommendations.innerHTML = '';
+            supplementList.innerHTML = '';
+            supplementContainer.classList.add('hidden');
+            complimentCard.classList.add('hidden');
+            diagnosisContent.classList.remove('hidden');
+
+            // Reset Chat History
+            chatHistory = [];
+            // Giữ lại tin nhắn chào mừng mặc định
+            chatMessages.innerHTML = `
+                <div class="flex justify-start">
+                    <div class="bg-green-200 text-gray-800 p-3 rounded-lg max-w-[80%] shadow-sm text-sm">
+                        <i class="fas fa-leaf text-primary-green mr-1"></i> Chào cậu, PotPal đây! Cậu có câu hỏi nào về cây trồng không? Cứ hỏi tớ nhé! 😊
+                    </div>
+                </div>
+            `;
+        }
+
+        /**
+         * Tạo System Instruction cho LLM (chế độ chẩn đoán ảnh)
+         */
+        function getSystemInstruction() {
+            const mode = analysisModeSelect.value;
+            
+            const commonInstruction = `Bạn là PotPal, chuyên gia chẩn đoán cây trồng/đất với giọng văn thân thiện, dễ thương và dùng từ ngữ Việt Nam hiện đại (như 'cư tê', 'xin lỗi cậu').
+
+            Bạn PHẢI trả lời bằng một khối JSON DUY NHẤT theo cấu trúc sau (KHÔNG thêm bất kỳ văn bản giới thiệu nào bên ngoài JSON hoặc Markdown block):
+            {
+              "is_plant": [true/false],
+              "status": "Tóm tắt tình trạng cây trồng/đất (Ví dụ: 'Thiếu Kali nhẹ' hoặc 'Nấm mốc bề mặt đất').",
+              "diagnosis": "Chẩn đoán chi tiết và nguyên nhân (2-3 câu).",
+              "recommendations": "Lời khuyên CỤ THỂ, HÀNH ĐỘNG được (các bước phải làm) dưới dạng danh sách gạch đầu dòng Markdown (- Bước 1: Cắt bỏ lá, - Bước 2: Bổ sung Calci). KHÔNG dùng các câu nói chung chung hay hứa hẹn.",
+              "supplements": ["Gợi ý 3-5 loại phân bón/sản phẩm bổ sung cụ thể (Ví dụ: NPK 20-20-20, Thuốc nấm Mancozeb)."],
+              "compliment": "Một lời khen hoặc câu nói dễ thương nếu is_plant: false. Lưu ý: thông báo này phải phù hợp với chế độ đang chọn (lá hay đất)."
+            }`;
+
+            if (mode === 'leaf') {
+                return commonInstruction + `\n\nHãy phân tích hình ảnh này để tìm bệnh hoặc thiếu chất dinh dưỡng trên lá cây. is_plant phải là true nếu đây là cây/lá.`;
+            } else if (mode === 'soil') {
+                return commonInstruction + `\n\nHãy phân tích hình ảnh này để đánh giá chất lượng đất/giá thể, độ ẩm hoặc nấm mốc. is_plant phải là true nếu đây là ảnh đất/giá thể. Chỉ đặt is_plant: false nếu ảnh là vật thể hoàn toàn không liên quan (như con người, đồ vật trong nhà).`;
+            }
+        }
+        
+        /**
+         * Thực hiện API Call với Backoff.
+         */
+        async function fetchWithExponentialBackoff(payload, maxRetries = MAX_RETRIES, initialDelay = INITIAL_DELAY_MS) {
+            for (let i = 0; i < maxRetries; i++) {
+                try {
+                    const response = await fetch(API_URL_BASE, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+
+                    if (response.ok) {
+                        return response.json();
+                    }
+
+                    // Xử lý lỗi 429 (Too Many Requests) hoặc các lỗi server khác để retry
+                    if (response.status === 429 || response.status >= 500) {
+                        const delay = initialDelay * Math.pow(2, i) + Math.random() * initialDelay;
+                        console.warn(`Retry ${i + 1}/${maxRetries} after ${Math.round(delay)}ms for status ${response.status}`);
+                        await new Promise(resolve => setTimeout(resolve, delay));
+                        continue; // Bắt đầu vòng lặp tiếp theo (retry)
+                    } else {
+                        // Nếu là lỗi client (4xx) khác 429, không retry
+                        const errorData = await response.json();
+                        throw new Error(`API Error ${response.status}: ${errorData.error?.message || response.statusText}`);
+                    }
+
+                } catch (error) {
+                    if (i === maxRetries - 1) {
+                        // Throw nếu đây là lần thử cuối cùng
+                        throw error;
+                    }
+                    // Nếu là lỗi mạng, cũng chờ và retry
+                    const delay = initialDelay * Math.pow(2, i) + Math.random() * initialDelay;
+                    console.warn(`Network or other error: ${error.message}. Retrying in ${Math.round(delay)}ms.`);
+                    await new Promise(resolve => setTimeout(resolve, delay));
+                }
+            }
+            throw new Error("Failed to fetch from API after multiple retries.");
+        }
+
+
+        /**
+         * Bắt đầu quá trình chẩn đoán (API Call cho hình ảnh)
+         */
+        window.diagnosePlant = async () => {
+            
+            if (!base64Image) {
+                showMessageBox("Lỗi Ảnh", "Vui lòng chọn một file ảnh trước khi phân tích.");
+                return;
+            }
+            
+            // Ẩn kết quả cũ, hiện loading
+            resultsSection.classList.add('hidden');
+            diagnoseButton.disabled = true;
+            loadingIndicator.classList.remove('hidden');
+
+            const systemInstruction = getSystemInstruction();
+
+            const payload = {
+                contents: [{
+                    parts: [
+                        { text: "Phân tích hình ảnh này theo hướng dẫn hệ thống." },
+                        {
+                            inlineData: {
+                                mimeType: imageMimeType,
+                                data: base64Image
+                            }
+                        }
+                    ]
+                }],
+                systemInstruction: {
+                    parts: [{ text: systemInstruction }]
+                }
+            };
+            
+            try {
+                const jsonResponse = await fetchWithExponentialBackoff(payload);
+                
+                // Lấy phần text (chứa JSON string)
+                const jsonString = jsonResponse.candidates?.[0]?.content?.parts?.[0]?.text;
+                
+                if (!jsonString) {
+                    throw new Error("API response was empty or malformed.");
+                }
+
+                // SỬ DỤNG HÀM TRÍCH XUẤT JSON MẠNH MẼ
+                const result = extractJsonFromText(jsonString);
+
+                // Hiển thị kết quả
+                displayResults(result);
+
+            } catch (error) {
+                console.error("Lỗi trong quá trình phân tích:", error);
+                showMessageBox("Lỗi Phân Tích", `Không thể hoàn thành chẩn đoán. Vui lòng kiểm tra lại kết nối hoặc thử lại. Chi tiết: ${error.message}`);
+            } finally {
+                loadingIndicator.classList.add('hidden');
+                diagnoseButton.disabled = false;
+            }
+        }
+
+        /**
+         * Hiển thị kết quả chẩn đoán lên giao diện
+         */
+        function displayResults(result) {
+            resultsSection.classList.remove('hidden');
+            const mode = analysisModeSelect.value; // Lấy chế độ hiện tại
+
+            // Kiểm tra is_plant là false hoặc không có đủ dữ liệu chẩn đoán
+            if (result.is_plant === false || (!result.status && !result.diagnosis)) { 
+                
+                complimentCard.classList.remove('hidden');
+                diagnosisContent.classList.add('hidden');
+                
+                let defaultCompliment;
+                if (mode === 'soil') {
+                    // Thông báo sửa đổi cho ảnh không phải đất/giá thể
+                    defaultCompliment = "Oopsie, hình như đây không phải ảnh đất/giá thể cư tê rồi. Cậu thử lại nhé! ✨";
+                } else {
+                    // Thông báo mặc định cho ảnh lá/cây
+                    defaultCompliment = "PotPal không chắc đây là cây trồng, nhưng ảnh này cư tê ghê! 💖";
+                }
+
+                // Dùng compliment của AI nếu có, nếu không thì dùng default compliment
+                complimentText.textContent = result.compliment || defaultCompliment;
+                resultsTitle.textContent = "PotPal 'bối rối' 😵‍💫";
+
+            } else if (result.is_plant === true || (result.status && result.diagnosis)) {
+                // Nếu là cây trồng/đất và có chẩn đoán
+                complimentCard.classList.add('hidden');
+                diagnosisContent.classList.remove('hidden');
+                resultsTitle.textContent = "Kết Quả Chẩn Đoán";
+                
+                // Cập nhật nhãn
+                modeLabel.textContent = mode === 'leaf' ? 'Tình Trạng Lá' : 'Tình Trạng Đất';
+                modeDiagnosisLabel.textContent = mode === 'leaf' ? 'Chẩn Đoán Sơ Bộ' : 'Đánh Giá Tổng Quan';
+
+                // Cập nhật nội dung chính
+                resultStatus.textContent = result.status || "Không xác định";
+                
+                // Thử định dạng màu cho Status
+                let statusClass = 'font-bold ';
+                const statusLower = result.status ? result.status.toLowerCase() : '';
+                if (statusLower.includes('khỏe mạnh') || statusLower.includes('tốt') || statusLower.includes('tơi xốp')) {
+                    statusClass += 'text-green-600';
+                } else if (statusLower.includes('nhẹ') || statusLower.includes('thiếu chất') || statusLower.includes('đang phục hồi')) {
+                    statusClass += 'text-yellow-600';
+                } else {
+                    statusClass += 'text-red-600';
+                }
+                resultStatus.className = statusClass;
+                
+                resultDiagnosis.textContent = result.diagnosis || "PotPal chưa thể đưa ra chẩn đoán chi tiết.";
+                
+                // Xử lý Markdown gạch đầu dòng từ recommendations
+                const recommendationsText = result.recommendations || "Không có khuyến nghị cụ thể.";
+                
+                // Chuyển đổi Markdown list thành HTML list
+                const htmlList = recommendationsText
+                    .split('\n')
+                    .map(line => {
+                        line = line.trim();
+                        // Chỉ parse các dòng bắt đầu bằng gạch ngang và dấu cách thành <li>
+                        if (line.startsWith('- ') || line.startsWith('* ')) {
+                            return `<li>${line.substring(2).trim()}</li>`;
+                        }
+                        // Xử lý các dòng không phải gạch đầu dòng như đoạn văn (p tag)
+                        if (line) {
+                            return `<p>${line}</p>`;
+                        }
+                        return '';
+                    })
+                    .filter(line => line)
+                    .join('');
+
+                // Dùng ul/li nếu có list, ngược lại dùng raw text trong p tag
+                resultRecommendations.innerHTML = htmlList.includes('<li>') ? `<ul class="list-disc list-inside space-y-2">${htmlList}</ul>` : `<p class="whitespace-pre-wrap">${recommendationsText}</p>`;
+                resultRecommendations.className = 'text-gray-700 leading-relaxed text-base';
+
+
+                // Gợi ý Sản phẩm
+                supplementList.innerHTML = '';
+                if (result.supplements && result.supplements.length > 0) {
+                    result.supplements.forEach(item => {
+                        const li = document.createElement('li');
+                        li.textContent = item;
+                        supplementList.appendChild(li);
+                    });
+                    supplementContainer.classList.remove('hidden');
+                } else {
+                    supplementContainer.classList.add('hidden');
+                }
+            } 
+        }
+        
+        // Thêm hàm init để đảm bảo nút Diagnose có thể được kích hoạt nếu có API key
+        function initApp() {
+            // Chỉ cần kiểm tra xem có ảnh được chọn không
+            if (base64Image) {
+                diagnoseButton.disabled = false;
+            } else {
+                diagnoseButton.disabled = true;
+            }
+        }
+
+        window.onload = initApp;
+
+    </script>
+</body>
+</html>
