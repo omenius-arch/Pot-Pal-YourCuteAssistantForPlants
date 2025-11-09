@@ -22,4 +22,6 @@ Lưu ý: Mọi thứ đều chỉ được AI đánh giá sơ bộ theo những 
  [Siêu quan trọng]: Mọi đánh giá của PotPal chỉ là đánh giá sơ bộ. PotPal chỉ có thể mang tính tham khảo hoặc dùng để đối phó với những vấn đề cơ bản nếu như bạn cần giúp đỡ. Nếu như chuyên sâu hơn PotPal xin khuyên bạn hãy hỏi chuyên gia để có kết quả tốt nhất
  Xin cảm ơn 
  Sản phẩm trên được tạo ra bởi Omenius hay còn gọi là Phạm Nguyễn Thiên Phúc
- 
+
+
+*Lưu ý siu nhỏ*: Không bắt buộc phải đúng ảnh thì mới có kết quả, bạn cứ thử gửi sai ảnh theo chi tiết muốn đánh giá đi xem PotPal sẽ nói gì
