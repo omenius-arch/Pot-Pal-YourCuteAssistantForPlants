@@ -4,43 +4,66 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PotPal - Trợ lý Chăm sóc Cây trồng</title>
-    <!-- Thêm Favicon từ ảnh cậu cung cấp -->
-    <!-- Sử dụng 'image/jpeg' vì file cậu gửi là .jpg -->
     <link rel="icon" type="image/jpeg" href="favicon.jpg"> 
     
-    <!-- Tải Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Tải Font Awesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap" rel="stylesheet">
+    
     <style>
-        /* Phong cách PlantPal cũ (màu xanh lá cây đậm) */
+        /* Phong cách PotPal MỚI (Màu xanh lá rực rỡ và Poppins) */
         body {
-            font-family: 'Inter', sans-serif;
-            background-color: #ecfdf5; /* Green-50 */
+            font-family: 'Poppins', sans-serif; /* Dùng Poppins */
+            background-color: #f7fefc; /* Nền trắng xanh rất nhẹ */
         }
         .file-input-label {
-            transition: all 0.2s;
+            transition: all 0.3s ease-in-out;
             cursor: pointer;
-            border-color: #059669; /* Green-600 */
+            border-color: #00b894; /* Primary Green mới */
         }
         .file-input-label:hover {
-            background-color: #059669; /* Green-600 */
+            background-color: #00b894; /* Primary Green mới */
             color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(0, 184, 148, 0.4);
         }
         .btn-primary {
-            background-color: #047857; /* Green-700 */
-            transition: background-color 0.2s;
+            background-color: #00b894; /* Primary Green mới */
+            transition: all 0.2s ease-in-out;
         }
         .btn-primary:hover:not(:disabled) {
-            background-color: #065f46; /* Green-800 */
+            background-color: #00997c; /* Tối hơn một chút khi hover */
+            transform: translateY(-2px);
+            box-shadow: 0 15px 20px -5px rgba(0, 184, 148, 0.5);
         }
+        .btn-primary:active:not(:disabled) {
+            transform: scale(0.98); /* Hiệu ứng nhấn nút */
+            box-shadow: none;
+        }
+
+        /* Thêm hiệu ứng cho Chat Button */
+        #chat-toggle-btn {
+            background-color: #00b894;
+            transition: all 0.3s ease-in-out;
+        }
+        #chat-toggle-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 0 0 6px rgba(0, 184, 148, 0.5);
+        }
+        
     </style>
     <script>
         tailwind.config = {
             theme: {
                 extend: {
                     colors: {
-                        'primary-green': '#047857', /* Green-700 */
+                        // Màu xanh mới: Rực rỡ và thân thiện hơn
+                        'primary-green': '#00b894', 
+                        'light-green': '#e0fffa', // Màu nền nhẹ cho các khối
+                    },
+                    boxShadow: {
+                        'fabulous': '0 20px 25px -5px rgba(0, 184, 148, 0.2), 0 10px 10px -5px rgba(0, 184, 148, 0.04)',
+                        'xl-green': '0 20px 25px -5px rgba(0, 184, 148, 0.3), 0 10px 10px -5px rgba(0, 184, 148, 0.1)',
                     }
                 }
             }
@@ -49,156 +72,133 @@
 </head>
 <body class="min-h-screen flex items-start justify-center p-4 md:p-10">
 
-    <div id="app-container" class="w-full max-w-xl bg-white rounded-xl shadow-2xl p-6 md:p-10 border border-green-100 mt-8">
+    <div id="app-container" class="w-full max-w-xl bg-white rounded-3xl shadow-fabulous p-8 md:p-12 border border-light-green mt-8 transform transition duration-500 hover:scale-[1.01]">
 
-        <!-- Header -->
-        <header class="text-center mb-6 border-b-2 border-green-200 pb-4">
-            <h1 class="text-4xl font-extrabold text-primary-green mb-1">
-                <i class="fas fa-leaf mr-2"></i> PotPal
+        <header class="text-center mb-8 border-b-4 border-primary-green pb-5">
+            <h1 class="text-5xl font-extrabold text-primary-green mb-1 flex items-center justify-center">
+                <i class="fas fa-seedling mr-3 animate-pulse"></i> PotPal
             </h1>
-            <!-- Dòng "Người đồng hành cư tê của cậu 💖" -->
-            <p class="text-xl text-gray-600 font-medium">Trợ lý chẩn đoán sức khỏe cây trồng</p>
-            <p class="text-lg text-pink-500 font-semibold mt-1">Người đồng hành cư tê của cậu 💖</p> 
+            <p class="text-xl text-gray-700 font-semibold mt-1">Trợ lý chẩn đoán sức khỏe cây trồng</p>
+            <p class="text-lg font-extrabold text-pink-500 mt-2 animate-bounce">Trợ lý cây trồng dễ thương của bạn 🪴💖</p>
         </header>
 
-        <!-- KHỐI API KEY ĐÃ BỊ XÓA KHỎI UI -->
-
-        <!-- Main Input Section -->
         <section id="input-section" class="mb-6">
             
-            <!-- Dòng "Mọi đánh giá..." -->
-            <p class="text-sm text-center text-red-500 font-medium mb-4 p-2 bg-red-50 rounded-lg border border-red-200">
-                Mọi đánh giá đều là sơ bộ thông qua hình ảnh. Hãy hỏi chuyên gia để được kết quả chính xác nhất.
+            <p class="text-sm text-center text-red-600 font-medium mb-5 p-3 bg-red-100 rounded-xl border-2 border-red-300 shadow-inner">
+                <i class="fas fa-exclamation-triangle mr-2"></i> Mọi đánh giá đều là sơ bộ thông qua hình ảnh. Hãy hỏi chuyên gia để được kết quả chính xác nhất.
             </p>
 
-            <!-- Lựa chọn Chế độ Phân tích -->
-            <div class="mb-5 p-4 bg-green-50 rounded-lg border border-green-300">
-                <label class="block text-lg font-bold text-primary-green mb-2 flex items-center">
-                    <i class="fas fa-tasks mr-2"></i> Chọn Chi Tiết Cần Phân Tích:
+            <div class="mb-6 p-5 bg-light-green rounded-xl border-2 border-primary-green shadow-lg">
+                <label class="block text-xl font-bold text-primary-green mb-3 flex items-center">
+                    <i class="fas fa-microscope mr-3"></i> Chọn Chi Tiết Cần Phân Tích:
                 </label>
-                <select id="analysis-mode" class="w-full p-3 border-2 border-green-400 rounded-lg shadow-sm focus:ring-green-500 focus:border-green-500 text-gray-700 font-medium">
+                <select id="analysis-mode" class="w-full p-3 border-2 border-primary-green rounded-xl shadow-md focus:ring-pink-500 focus:border-pink-500 text-gray-800 font-medium transition duration-200 hover:border-pink-400">
                     <option value="leaf">Đánh giá Lá (Phát hiện Bệnh, Thiếu chất)</option>
                     <option value="soil">Đánh giá Đất/Giá thể (Kiểm tra Độ ẩm, Nấm mốc)</option>
                 </select>
             </div>
             
-            <!-- Hiển thị ảnh và nút chọn lại -->
-            <div id="image-preview-container" class="mb-4 hidden">
-                <img id="image-preview" class="w-full h-auto max-h-64 object-contain rounded-lg border-2 border-green-300 p-1 mb-2 shadow-md" alt="Xem trước ảnh">
-                <button onclick="resetApp()" class="w-full py-2 bg-red-600 text-white font-semibold rounded-lg hover:bg-red-700 transition duration-150">
-                    Chọn Ảnh Khác
+            <div id="image-preview-container" class="mb-5 hidden">
+                <img id="image-preview" class="w-full h-auto max-h-72 object-contain rounded-2xl border-4 border-primary-green p-2 mb-3 shadow-xl-green" alt="Xem trước ảnh">
+                <button onclick="resetApp()" class="w-full py-3 bg-red-500 text-white font-bold rounded-xl hover:bg-red-600 transition duration-200 transform active:scale-95 shadow-lg">
+                    <i class="fas fa-undo mr-2"></i> Chọn Ảnh Khác
                 </button>
             </div>
             
-            <!-- Nút Tải ảnh -->
             <input type="file" id="plant-image" accept="image/*" class="hidden" onchange="previewImage(event)">
             
-            <label for="plant-image" id="upload-label" class="file-input-label flex flex-col items-center justify-center h-48 border-4 border-dashed text-primary-green rounded-xl bg-green-50 shadow-inner">
-                <i class="fas fa-cloud-upload-alt text-5xl mb-3"></i>
-                <span class="text-xl font-bold">Tải ảnh cây trồng bị bệnh</span>
-                <span class="text-sm mt-1 text-gray-500">(File ảnh < 5MB)</span>
+            <label for="plant-image" id="upload-label" class="file-input-label flex flex-col items-center justify-center h-52 border-4 border-dashed text-primary-green rounded-2xl bg-light-green shadow-inner p-4">
+                <i class="fas fa-cloud-upload-alt text-6xl mb-3"></i>
+                <span class="text-2xl font-extrabold">Tải ảnh cây trồng bị bệnh</span>
+                <span class="text-sm mt-2 text-gray-500 font-semibold">(File ảnh < 5MB)</span>
             </label>
 
-            <!-- Dòng hướng dẫn chụp ảnh mới -->
-            <p class="text-sm text-center text-green-600 font-medium mt-3 mb-4 p-2 bg-green-100 rounded-lg border border-green-300 flex items-center justify-center space-x-2">
-                <i class="fas fa-search-plus"></i> 
+            <p class="text-base text-center text-primary-green font-semibold mt-4 mb-6 p-3 bg-green-100 rounded-xl border-2 border-green-300 flex items-center justify-center space-x-2 shadow-md">
+                <i class="fas fa-camera-retro"></i> 
                 <span id="instruction-text">Hãy chụp ảnh cây bao quát để có thể đưa kết quả đánh giá tốt nhất ạ 😉</span>
             </p>
 
-            <button id="diagnose-button" onclick="diagnosePlant()" class="w-full py-3 btn-primary text-white font-bold text-lg rounded-xl shadow-lg disabled:opacity-50" disabled>
-                <i class="fas fa-stethoscope mr-2"></i> Bắt đầu Phân tích
+            <button id="diagnose-button" onclick="diagnosePlant()" class="w-full py-4 btn-primary text-white font-extrabold text-xl rounded-2xl shadow-xl-green disabled:opacity-50" disabled>
+                <i class="fas fa-stethoscope mr-3"></i> Bắt đầu Phân tích
             </button>
         </section>
 
-        <!-- Loading Indicator -->
-        <section id="loading-indicator" class="hidden text-center p-8">
-            <div class="animate-spin inline-block w-8 h-8 border-4 border-t-4 border-primary-green border-t-transparent rounded-full mb-3"></div>
-            <p class="text-lg font-semibold text-primary-green">AI đang phân tích ảnh...</p>
+        <section id="loading-indicator" class="hidden text-center p-10 bg-light-green rounded-2xl shadow-inner">
+            <div class="animate-spin inline-block w-10 h-10 border-4 border-t-4 border-primary-green border-t-transparent rounded-full mb-4"></div>
+            <p class="text-xl font-bold text-primary-green">PotPal đang 'ngửi' ảnh, phân tích 'căng đét' luôn... 🧐</p>
         </section>
 
-        <!-- Results Section (Phần hiển thị kết quả) -->
-        <section id="results-section" class="hidden mt-8 border-t pt-6 border-gray-200">
-            <h2 id="results-title" class="text-3xl font-bold text-gray-800 border-l-4 border-primary-green pl-3 pb-2 mb-6">
-                <i class="fas fa-clipboard-check mr-2 text-primary-green"></i> Kết Quả Chẩn Đoán
+        <section id="results-section" class="hidden mt-10 border-t-4 border-primary-green pt-8">
+            <h2 id="results-title" class="text-3xl font-extrabold text-gray-800 border-l-6 border-pink-500 pl-4 pb-2 mb-8">
+                <i class="fas fa-clipboard-check mr-3 text-primary-green"></i> Kết Quả Chẩn Đoán
             </h2>
 
-            <!-- Card Lời Khen (Chỉ hiện khi không phải cây trồng) -->
-            <div id="compliment-card" class="hidden text-center bg-yellow-50 p-6 rounded-lg shadow-inner border border-yellow-300">
-                <i class="fas fa-star text-4xl text-yellow-600 mb-3"></i>
-                <p id="compliment-text" class="text-xl font-bold text-yellow-800"></p>
+            <div id="compliment-card" class="hidden text-center bg-yellow-100 p-8 rounded-2xl shadow-xl border-4 border-yellow-400 transform rotate-[-1deg]">
+                <i class="fas fa-star-of-life text-5xl text-yellow-600 mb-4 animate-bounce"></i>
+                <p id="compliment-text" class="text-2xl font-extrabold text-yellow-800"></p>
+                <p class="text-lg text-yellow-700 mt-2">Đúng là không phải cây rồi, xin lỗi cậu nha! 🥲</p>
             </div>
             
-            <!-- Khối Chẩn đoán (Chỉ hiện khi là cây trồng) -->
-            <div id="diagnosis-content" class="space-y-4">
+            <div id="diagnosis-content" class="space-y-6">
                 
-                <!-- Tóm tắt -->
-                <div id="diagnosis-card" class="bg-white p-4 rounded-lg shadow-md border-t-4 border-primary-green">
-                    <p class="text-lg font-semibold text-gray-700"><span id="mode-label">Tình Trạng Lá</span>: <span id="result-status" class="font-bold text-red-600"></span></p>
-                    <p class="text-lg font-semibold text-gray-700 mt-1"><span id="mode-diagnosis-label">Chẩn Đoán Sơ Bộ</span>: <span id="result-diagnosis" class="text-gray-900 font-medium"></span></p>
+                <div id="diagnosis-card" class="bg-white p-5 rounded-2xl shadow-xl border-t-8 border-primary-green transform hover:scale-[1.02] transition duration-300">
+                    <p class="text-xl font-bold text-gray-800"><span id="mode-label" class="text-primary-green">Tình Trạng Lá</span>: <span id="result-status" class="font-extrabold text-red-600 ml-2"></span></p>
+                    <p class="text-xl font-bold text-gray-800 mt-2"><span id="mode-diagnosis-label" class="text-primary-green">Chẩn Đoán Sơ Bộ</span>: <span id="result-diagnosis" class="text-gray-900 font-semibold ml-2"></span></p>
                 </div>
     
-                <!-- Khuyến nghị & Điều trị -->
-                <div class="bg-green-50 p-4 rounded-lg border border-green-300 shadow-sm">
-                    <h3 class="text-xl font-bold text-primary-green mb-2 flex items-center">
-                        <i class="fas fa-hand-holding-heart mr-2"></i> Hướng Dẫn Chăm Sóc
+                <div class="bg-light-green p-6 rounded-2xl border-2 border-primary-green shadow-lg">
+                    <h3 class="text-2xl font-bold text-primary-green mb-3 flex items-center">
+                        <i class="fas fa-hand-holding-heart mr-3 text-pink-500"></i> Hướng Dẫn Chăm Sóc Thân Thiện
                     </h3>
-                    <div id="result-recommendations" class="text-gray-700 whitespace-pre-wrap leading-relaxed text-base"></div>
+                    <div id="result-recommendations" class="text-gray-700 whitespace-pre-wrap leading-loose text-base"></div>
                 </div>
 
-                <!-- Gợi ý Sản phẩm -->
-                <div id="supplement-suggestion-container" class="hidden bg-gray-100 p-4 rounded-lg border border-gray-300 shadow-sm">
-                    <h3 class="text-lg font-bold text-gray-700 mb-2 flex items-center">
-                        <i class="fas fa-vial mr-2"></i> Gợi Ý Bổ Sung (Dinh Dưỡng)
+                <div id="supplement-suggestion-container" class="hidden bg-gray-100 p-6 rounded-2xl border border-gray-300 shadow-md">
+                    <h3 class="text-xl font-bold text-gray-700 mb-3 flex items-center">
+                        <i class="fas fa-vial mr-3 text-blue-500"></i> Gợi Ý Bổ Sung (Dinh Dưỡng & Thuốc)
                     </h3>
-                    <ul id="supplement-list" class="list-disc list-inside text-gray-700 space-y-1 text-sm">
-                        <!-- Sản phẩm sẽ được thêm vào đây -->
-                    </ul>
+                    <ul id="supplement-list" class="list-disc list-inside text-gray-700 space-y-2 text-base ml-4">
+                        </ul>
                 </div>
             </div>
         </section>
 
-        <!-- Message Box (Thay thế cho alert()) -->
-        <div id="message-box" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center p-4 z-50" onclick="hideMessageBox()">
-            <div class="bg-white p-6 rounded-xl shadow-2xl max-w-sm w-full" onclick="event.stopPropagation()">
-                <h3 id="message-box-title" class="text-xl font-bold mb-3 text-red-600">Lỗi</h3>
-                <p id="message-box-content" class="text-gray-700 mb-4">Có lỗi xảy ra.</p>
-                <button onclick="hideMessageBox()" class="w-full py-2 bg-red-600 text-white font-semibold rounded-lg hover:bg-red-700 transition duration-150">Đóng</button>
+        <div id="message-box" class="fixed inset-0 bg-black bg-opacity-60 hidden items-center justify-center p-4 z-50 transition duration-300" onclick="hideMessageBox()">
+            <div class="bg-white p-8 rounded-3xl shadow-2xl max-w-sm w-full transform scale-100 transition duration-300" onclick="event.stopPropagation()">
+                <h3 id="message-box-title" class="text-2xl font-extrabold mb-4 text-red-600 border-b-2 border-red-300 pb-2">Lỗi</h3>
+                <p id="message-box-content" class="text-gray-700 mb-6 text-lg">Có lỗi xảy ra.</p>
+                <button onclick="hideMessageBox()" class="w-full py-3 bg-red-600 text-white font-bold rounded-xl hover:bg-red-700 transition duration-150 transform active:scale-95 shadow-lg">
+                    <i class="fas fa-times-circle mr-2"></i> Đóng
+                </button>
             </div>
         </div>
 
     </div>
 
-    <!-- Chat Widget (Phần mới) -->
     <div id="chat-widget" class="fixed bottom-4 right-4 md:bottom-10 md:right-10 z-40">
-        <!-- Chat Toggle Button -->
-        <button id="chat-toggle-btn" onclick="toggleChat()" class="bg-primary-green hover:bg-green-700 text-white p-4 rounded-full shadow-lg transition duration-300 transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-green-300">
-            <i class="fas fa-comment-dots text-2xl"></i>
+        <button id="chat-toggle-btn" onclick="toggleChat()" class="bg-primary-green hover:bg-green-700 text-white p-5 rounded-full shadow-2xl transition duration-300 transform focus:outline-none focus:ring-8 focus:ring-primary-green focus:ring-opacity-50">
+            <i class="fas fa-comment-dots text-3xl"></i>
         </button>
 
-        <!-- Chat Window -->
-        <div id="chat-window" class="hidden bg-white rounded-xl shadow-2xl border-4 border-primary-green flex flex-col w-72 md:w-80 h-96 absolute bottom-16 right-0">
-            <!-- Chat Header -->
-            <div class="p-3 bg-primary-green text-white rounded-t-lg flex justify-between items-center">
-                <span class="text-lg font-bold">PotPal Chat 💖</span>
-                <button onclick="toggleChat()" class="text-white hover:text-green-200">
-                    <i class="fas fa-times"></i>
+        <div id="chat-window" class="hidden bg-white rounded-2xl shadow-2xl border-4 border-primary-green flex flex-col w-72 md:w-80 h-[450px] absolute bottom-20 right-0 transform origin-bottom-right scale-100 transition duration-300">
+            <div class="p-4 bg-primary-green text-white rounded-t-xl flex justify-between items-center shadow-md">
+                <span class="text-xl font-bold"><i class="fas fa-robot mr-2"></i> PotPal Chat 💖</span>
+                <button onclick="toggleChat()" class="text-white hover:text-pink-200 transition">
+                    <i class="fas fa-times text-xl"></i>
                 </button>
             </div>
 
-            <!-- Chat Messages -->
-            <div id="chat-messages" class="flex-grow p-3 overflow-y-auto space-y-3 bg-green-50">
-                <!-- Default welcome message -->
+            <div id="chat-messages" class="flex-grow p-4 overflow-y-auto space-y-4 bg-light-green">
                 <div class="flex justify-start">
-                    <div class="bg-green-200 text-gray-800 p-3 rounded-lg max-w-[80%] shadow-sm text-sm">
+                    <div class="bg-white text-gray-800 p-3 rounded-xl max-w-[85%] shadow-md text-sm border-2 border-green-200">
                         <i class="fas fa-leaf text-primary-green mr-1"></i> Chào cậu, PotPal đây! Cậu có câu hỏi nào về cây trồng không? Cứ hỏi tớ nhé! 😊
                     </div>
                 </div>
             </div>
 
-            <!-- Chat Input -->
-            <div class="p-3 border-t border-green-300 bg-white flex items-center">
-                <input type="text" id="chat-input" placeholder="Hỏi PotPal..." class="w-full p-2 border border-gray-300 rounded-lg focus:ring-primary-green focus:border-primary-green text-sm" onkeydown="if(event.key === 'Enter') sendChatMessage()">
-                <button onclick="sendChatMessage()" id="chat-send-btn" class="ml-2 p-2 bg-primary-green text-white rounded-lg hover:bg-green-700 transition disabled:opacity-50">
+            <div class="p-4 border-t border-green-300 bg-white flex items-center rounded-b-xl">
+                <input type="text" id="chat-input" placeholder="Hỏi PotPal..." class="w-full p-3 border-2 border-gray-300 rounded-xl focus:ring-primary-green focus:border-primary-green text-sm transition duration-200" onkeydown="if(event.key === 'Enter') sendChatMessage()">
+                <button onclick="sendChatMessage()" id="chat-send-btn" class="ml-2 p-3 bg-primary-green text-white rounded-xl hover:bg-green-700 transition disabled:opacity-50 transform active:scale-95 shadow-lg">
                     <i class="fas fa-paper-plane"></i>
                 </button>
             </div>
@@ -272,9 +272,13 @@
          */
         window.toggleChat = () => {
             chatWindow.classList.toggle('hidden');
+            // Thêm hiệu ứng transform để cửa sổ chat hiện ra mượt mà hơn
             if (!chatWindow.classList.contains('hidden')) {
+                chatWindow.style.transform = 'scale(1)';
                 chatInput.focus();
                 chatMessages.scrollTop = chatMessages.scrollHeight; // Cuộn xuống dưới khi mở
+            } else {
+                chatWindow.style.transform = 'scale(0.8)';
             }
         }
 
@@ -296,9 +300,10 @@
             messageBubble.innerHTML = formattedText;
             
             if (sender === 'user') {
-                messageBubble.className = 'bg-blue-500 text-white p-3 rounded-lg max-w-[80%] shadow-md text-sm';
+                messageBubble.className = 'bg-blue-500 text-white p-3 rounded-xl max-w-[85%] shadow-md text-sm';
             } else {
-                messageBubble.className = 'bg-green-200 text-gray-800 p-3 rounded-lg max-w-[80%] shadow-sm text-sm';
+                // Thay đổi màu nền tin nhắn của model
+                messageBubble.className = 'bg-white text-gray-800 p-3 rounded-xl max-w-[85%] shadow-md text-sm border-2 border-green-200';
                 messageBubble.innerHTML = `<i class="fas fa-leaf text-primary-green mr-1"></i> ${formattedText}`;
             }
 
@@ -328,17 +333,18 @@
             const loadingWrapper = document.createElement('div');
             loadingWrapper.className = 'flex justify-start';
             const loadingBubble = document.createElement('div');
-            loadingBubble.className = 'bg-green-200 text-gray-800 p-3 rounded-lg max-w-[80%] shadow-sm animate-pulse text-sm';
-            loadingBubble.innerHTML = `<i class="fas fa-leaf text-primary-green mr-1"></i> PotPal đang nghĩ...`;
+            // Thêm hiệu ứng loading
+            loadingBubble.className = 'bg-white text-gray-800 p-3 rounded-xl max-w-[85%] shadow-md animate-pulse text-sm border-2 border-green-200';
+            loadingBubble.innerHTML = `<i class="fas fa-leaf text-primary-green mr-1 animate-spin"></i> PotPal đang nghĩ...`;
             loadingWrapper.appendChild(loadingBubble);
             chatMessages.appendChild(loadingWrapper);
             chatMessages.scrollTop = chatMessages.scrollHeight;
 
             try {
-                // 2. Chuẩn bị System Instruction riêng cho chat
+                // 2. Chuẩn bị System Instruction riêng cho chat (đã loại bỏ 'cư tê' nhưng cho phép 'dễ thương')
                 const chatSystemInstruction = {
                     parts: [{ 
-                        text: "Bạn là PotPal, một trợ lý chatbot về chăm sóc cây trồng. Hãy giữ giọng văn thân thiện, dễ thương, dùng từ ngữ hiện đại và trả lời ngắn gọn, trực tiếp cho câu hỏi của người dùng. Tránh trả lời bằng JSON." 
+                        text: "Bạn là PotPal, một trợ lý chatbot về chăm sóc cây trồng. Hãy giữ giọng văn thân thiện, dễ thương, dùng từ ngữ hiện đại và trả lời ngắn gọn, trực tiếp cho câu hỏi của người dùng. Tránh trả lời bằng JSON. KHÔNG dùng từ 'cư tê' hay các từ có sắc thái tương tự." 
                     }]
                 };
 
@@ -390,11 +396,11 @@
             document.getElementById('message-box-content').textContent = content;
 
             if (type === 'error') {
-                titleElement.className = 'text-xl font-bold mb-3 text-red-600';
-                button.className = 'w-full py-2 bg-red-600 text-white font-semibold rounded-lg hover:bg-red-700 transition duration-150';
+                titleElement.className = 'text-2xl font-extrabold mb-4 text-red-600 border-b-2 border-red-300 pb-2';
+                button.className = 'w-full py-3 bg-red-600 text-white font-bold rounded-xl hover:bg-red-700 transition duration-150 transform active:scale-95 shadow-lg';
             } else if (type === 'info') {
-                titleElement.className = 'text-xl font-bold mb-3 text-primary-green';
-                button.className = 'w-full py-2 bg-primary-green text-white font-semibold rounded-lg hover:bg-green-700 transition duration-150';
+                titleElement.className = 'text-2xl font-extrabold mb-4 text-primary-green border-b-2 border-green-300 pb-2';
+                button.className = 'w-full py-3 bg-primary-green text-white font-bold rounded-xl hover:bg-green-700 transition duration-150 transform active:scale-95 shadow-lg';
             }
             
             box.classList.remove('hidden');
@@ -489,7 +495,7 @@
             // Giữ lại tin nhắn chào mừng mặc định
             chatMessages.innerHTML = `
                 <div class="flex justify-start">
-                    <div class="bg-green-200 text-gray-800 p-3 rounded-lg max-w-[80%] shadow-sm text-sm">
+                    <div class="bg-white text-gray-800 p-3 rounded-xl max-w-[85%] shadow-md text-sm border-2 border-green-200">
                         <i class="fas fa-leaf text-primary-green mr-1"></i> Chào cậu, PotPal đây! Cậu có câu hỏi nào về cây trồng không? Cứ hỏi tớ nhé! 😊
                     </div>
                 </div>
@@ -497,12 +503,13 @@
         }
 
         /**
-         * Tạo System Instruction cho LLM (chế độ chẩn đoán ảnh)
+         * Tạo System Instruction cho LLM (chế độ chẩn đoán ảnh) - Đã bỏ 'cư tê'
          */
         function getSystemInstruction() {
             const mode = analysisModeSelect.value;
             
-            const commonInstruction = `Bạn là PotPal, chuyên gia chẩn đoán cây trồng/đất với giọng văn thân thiện, dễ thương và dùng từ ngữ Việt Nam hiện đại (như 'cư tê', 'xin lỗi cậu').
+            // Đã cập nhật System Instruction để loại bỏ 'cư tê' nhưng cho phép 'dễ thương'
+            const commonInstruction = `Bạn là PotPal, chuyên gia chẩn đoán cây trồng/đất với giọng văn thân thiện, dễ thương và dùng từ ngữ Việt Nam hiện đại (như 'xin lỗi cậu'). KHÔNG dùng từ 'cư tê' hay các từ có sắc thái tương tự.
 
             Bạn PHẢI trả lời bằng một khối JSON DUY NHẤT theo cấu trúc sau (KHÔNG thêm bất kỳ văn bản giới thiệu nào bên ngoài JSON hoặc Markdown block):
             {
@@ -639,10 +646,10 @@
                 let defaultCompliment;
                 if (mode === 'soil') {
                     // Thông báo sửa đổi cho ảnh không phải đất/giá thể
-                    defaultCompliment = "Oopsie, hình như đây không phải ảnh đất/giá thể cư tê rồi. Cậu thử lại nhé! ✨";
+                    defaultCompliment = "Oopsie, hình như đây không phải ảnh đất/giá thể rồi. Cậu thử lại nhé! ✨"; 
                 } else {
                     // Thông báo mặc định cho ảnh lá/cây
-                    defaultCompliment = "PotPal không chắc đây là cây trồng, nhưng ảnh này cư tê ghê! 💖";
+                    defaultCompliment = "PotPal không chắc đây là cây trồng, nhưng ảnh này nhìn cũng được đó! 💖"; 
                 }
 
                 // Dùng compliment của AI nếu có, nếu không thì dùng default compliment
@@ -663,10 +670,10 @@
                 resultStatus.textContent = result.status || "Không xác định";
                 
                 // Thử định dạng màu cho Status
-                let statusClass = 'font-bold ';
+                let statusClass = 'font-extrabold ml-2 ';
                 const statusLower = result.status ? result.status.toLowerCase() : '';
                 if (statusLower.includes('khỏe mạnh') || statusLower.includes('tốt') || statusLower.includes('tơi xốp')) {
-                    statusClass += 'text-green-600';
+                    statusClass += 'text-primary-green'; // Màu xanh mới cho trạng thái tốt
                 } else if (statusLower.includes('nhẹ') || statusLower.includes('thiếu chất') || statusLower.includes('đang phục hồi')) {
                     statusClass += 'text-yellow-600';
                 } else {
@@ -686,7 +693,7 @@
                         line = line.trim();
                         // Chỉ parse các dòng bắt đầu bằng gạch ngang và dấu cách thành <li>
                         if (line.startsWith('- ') || line.startsWith('* ')) {
-                            return `<li>${line.substring(2).trim()}</li>`;
+                            return `<li><i class="fas fa-check-circle mr-2 text-pink-500"></i>${line.substring(2).trim()}</li>`; // Thêm icon check-circle
                         }
                         // Xử lý các dòng không phải gạch đầu dòng như đoạn văn (p tag)
                         if (line) {
@@ -698,7 +705,7 @@
                     .join('');
 
                 // Dùng ul/li nếu có list, ngược lại dùng raw text trong p tag
-                resultRecommendations.innerHTML = htmlList.includes('<li>') ? `<ul class="list-disc list-inside space-y-2">${htmlList}</ul>` : `<p class="whitespace-pre-wrap">${recommendationsText}</p>`;
+                resultRecommendations.innerHTML = htmlList.includes('<li>') ? `<ul class="list-none space-y-3">${htmlList}</ul>` : `<p class="whitespace-pre-wrap">${recommendationsText}</p>`;
                 resultRecommendations.className = 'text-gray-700 leading-relaxed text-base';
 
 
@@ -707,7 +714,8 @@
                 if (result.supplements && result.supplements.length > 0) {
                     result.supplements.forEach(item => {
                         const li = document.createElement('li');
-                        li.textContent = item;
+                        li.className = 'flex items-start text-base';
+                        li.innerHTML = `<i class="fas fa-flask text-blue-500 mr-3 mt-1"></i> ${item}`; // Thêm icon flask
                         supplementList.appendChild(li);
                     });
                     supplementContainer.classList.remove('hidden');
