@@ -21,7 +21,7 @@ Lưu ý: Mọi thứ đều chỉ được AI đánh giá sơ bộ theo những 
  -Bước 3: Nhấn vào biểu tượng "Máy bay giấy" hoặc nhấn Enter để gửi câu hỏi, PotPal sẽ phân tích câu hỏi và đưa ra câu trả lời tốt nhất có thế
  [Siêu quan trọng]: Mọi đánh giá của PotPal chỉ là đánh giá sơ bộ. PotPal chỉ có thể mang tính tham khảo hoặc dùng để đối phó với những vấn đề cơ bản nếu như bạn cần giúp đỡ. Nếu như chuyên sâu hơn PotPal xin khuyên bạn hãy hỏi chuyên gia để có kết quả tốt nhất
  Xin cảm ơn 
- Sản phẩm trên được tạo ra bởi Omenius hay còn gọi là Phạm Nguyễn Thiên Phúc
+ Sản phẩm trên được tạo ra bởi Omenius hay còn gọi là Phạm Nguyễn Thiên Phúc và Huỳnh Gia Phúc
 
 
 *Lưu ý siu nhỏ*: Không bắt buộc phải đúng ảnh thì mới có kết quả, bạn cứ thử gửi sai ảnh theo chi tiết muốn đánh giá đi xem PotPal sẽ nói gì
