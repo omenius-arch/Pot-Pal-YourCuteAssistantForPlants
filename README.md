@@ -24,4 +24,4 @@ Lưu ý: Mọi thứ đều chỉ được AI đánh giá sơ bộ theo những 
  Sản phẩm trên được tạo ra bởi Omenius hay còn gọi là Phạm Nguyễn Thiên Phúc và Huỳnh Gia Phúc
 
 
-*Lưu ý siu nhỏ*: Không bắt buộc phải đúng ảnh thì mới có kết quả, bạn cứ thử gửi sai ảnh theo chi tiết muốn đánh giá đi xem PotPal sẽ nói gì
+*Lưu ý siu nhỏ*: Không bắt buộc phải đúng ảnh thì mới có kết quả, bạn cứ thử gửi sai ảnh theo chi tiết muốn đánh giá đi xem PotPal sẽ nói gì. Core của PotPal là Gemini API
